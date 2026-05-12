@@ -321,27 +321,27 @@ inductive Term (V : Type) (scope : Nat) where
 -- de Bruijn index) are unrepresentable by construction. Each quantifier (e.g. `exist`)
 -- increments the scope by one in its body, and closed expressions have scope 0. This way the
 -- type checker enforces scoping invariants.
-inductive Expr (S P V : Type) : Nat → Type where
-  | atom {n} : S → Term V n → Expr S P V n
-  | bot {n} : Expr S P V n
-  | neg {n} : Expr S P V n → Expr S P V n
-  | and {n} : Expr S P V n → Expr S P V n → Expr S P V n
-  | eq {n} : Term V n → Term V n → Expr S P V n
-  | quorum {n} : Expr S P V n → Expr S P V n
-  | everywhere {n} : Expr S P V n → Expr S P V n
-  | tf {n} : Expr S P V n → Expr S P V n
-  | t {n} : Expr S P V n → Expr S P V n
-  | exist {n} : Expr S P V (n +1) → Expr S P V n
-  | exist_affine {n} : Expr S P V (n +1) → Expr S P V n
+inductive Expr (S Pnt V : Type) : Nat → Type where
+  | atom {n} : S → Term V n → Expr S Pnt V n
+  | bot {n} : Expr S Pnt V n
+  | neg {n} : Expr S Pnt V n → Expr S Pnt V n
+  | and {n} : Expr S Pnt V n → Expr S Pnt V n → Expr S Pnt V n
+  | eq {n} : Term V n → Term V n → Expr S Pnt V n
+  | quorum {n} : Expr S Pnt V n → Expr S Pnt V n
+  | everywhere {n} : Expr S Pnt V n → Expr S Pnt V n
+  | tf {n} : Expr S Pnt V n → Expr S Pnt V n
+  | t {n} : Expr S Pnt V n → Expr S Pnt V n
+  | exist {n} : Expr S Pnt V (n +1) → Expr S Pnt V n
+  | exist_affine {n} : Expr S Pnt V (n +1) → Expr S Pnt V n
 
-def Interpretation (S P V : Type) := S → P → V → 𝟯
+def Interpretation (S Pnt V : Type) := S → Pnt → V → 𝟯
 
 structure Model
   (Sig : Type)
-  (P : Type) [Fintype P] [DecidableEq P] [Inhabited P]
+  (Pnt : Type) [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt]
   (V : Type) [Fintype V] [DecidableEq V] where
-  S : FinSemitopology P
-  ς : Interpretation Sig P V
+  S : FinSemitopology Pnt
+  ς : Interpretation Sig Pnt V
 
 end Definition_3_2_1
 
@@ -350,12 +350,12 @@ section Notation_3_2_2
 namespace Notation
 
 variable
-  {S P V : Type}
+  {S Pnt V : Type}
   [Fintype V]
   [DecidableEq V]
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   {n : Nat}
 
 scoped notation "¬ₑ " => Expr.neg
@@ -369,51 +369,51 @@ scoped notation "Tₑ " => Expr.t
 scoped notation "∃⁎ₑ " => Expr.exist
 scoped notation "∃₀₁ₑ " => Expr.exist_affine
 
-abbrev somewhere (φ : Expr S P V n) : Expr S P V n := ¬ₑ (□ₑ (¬ₑ φ))
+abbrev somewhere (φ : Expr S Pnt V n) : Expr S Pnt V n := ¬ₑ (□ₑ (¬ₑ φ))
 scoped notation "◇ₑ " => somewhere
 
-abbrev contraquorum (φ : Expr S P V n) : Expr S P V n := ¬ₑ (⊡ₑ (¬ₑ φ))
+abbrev contraquorum (φ : Expr S Pnt V n) : Expr S Pnt V n := ¬ₑ (⊡ₑ (¬ₑ φ))
 scoped notation "⟐ₑ " => contraquorum
 
-abbrev or {n : Nat} (φ ψ : Expr S P V n) : Expr S P V n := ¬ₑ (¬ₑ φ ∧ₑ ¬ₑ ψ)
+abbrev or {n : Nat} (φ ψ : Expr S Pnt V n) : Expr S Pnt V n := ¬ₑ (¬ₑ φ ∧ₑ ¬ₑ ψ)
 scoped infixl:30 " ∨ₑ " => or
 
-abbrev xor {n : Nat} (φ ψ : Expr S P V n) : Expr S P V n := (φ ∧ₑ ¬ₑ ψ) ∨ₑ (¬ₑ φ ∧ₑ ψ)
+abbrev xor {n : Nat} (φ ψ : Expr S Pnt V n) : Expr S Pnt V n := (φ ∧ₑ ¬ₑ ψ) ∨ₑ (¬ₑ φ ∧ₑ ψ)
 scoped infixl:30 " ⊕ₑ " => xor
 
-@[simp] def impl {n : Nat} (φ ψ : Expr S P V n) : Expr S P V n := ¬ₑ φ ∨ₑ ψ
+@[simp] def impl {n : Nat} (φ ψ : Expr S Pnt V n) : Expr S Pnt V n := ¬ₑ φ ∨ₑ ψ
 scoped infixl:25 " →ₑ " => impl
 
-abbrev simpl {n : Nat} (φ ψ : Expr S P V n) : Expr S P V n := φ →ₑ Tₑ ψ
+abbrev simpl {n : Nat} (φ ψ : Expr S Pnt V n) : Expr S Pnt V n := φ →ₑ Tₑ ψ
 scoped infixl:25 " ⇀ₑ " => simpl
 
-abbrev for_all {n : Nat} (φ : Expr S P V (n +1)) : Expr S P V n := ¬ₑ (∃⁎ₑ (¬ₑ φ))
+abbrev for_all {n : Nat} (φ : Expr S Pnt V (n +1)) : Expr S Pnt V n := ¬ₑ (∃⁎ₑ (¬ₑ φ))
 scoped notation "∀ₑ " => for_all
 
-abbrev existence_unique {n : Nat} (φ : Expr S P V (n +1)) : Expr S P V n := ∃⁎ₑ φ ∧ₑ ∃₀₁ₑ φ
+abbrev existence_unique {n : Nat} (φ : Expr S Pnt V (n +1)) : Expr S Pnt V n := ∃⁎ₑ φ ∧ₑ ∃₀₁ₑ φ
 scoped notation "∃₁ₑ " => existence_unique
 
-abbrev is_byzantine {n : Nat} (φ : Expr S P V n) : Expr S P V n := ¬ₑ (TFₑ φ)
+abbrev is_byzantine {n : Nat} (φ : Expr S Pnt V n) : Expr S Pnt V n := ¬ₑ (TFₑ φ)
 scoped notation "Bₑ " => is_byzantine
 
 scoped notation "[" s "; " t "]ₑ" => Expr.atom s t
 scoped notation "[" s ", " t "]ₑ" => Expr.atom s (Term.val t)
 scoped notation "[" s "]ₑ" => Expr.atom s (Term.bound 0) -- defined in Notation 3.2.2 (2)
 
-abbrev TF_all {n : Nat} (s : S) : Expr S P V n := ∀ₑ (TFₑ [s]ₑ)
+abbrev TF_all {n : Nat} (s : S) : Expr S Pnt V n := ∀ₑ (TFₑ [s]ₑ)
 
-def TF_conj {n : Nat} (s : S) : List S → Expr S P V (n + 1)
+def TF_conj {n : Nat} (s : S) : List S → Expr S Pnt V (n + 1)
   | [] => TFₑ [s]ₑ
   | t :: ts => TFₑ [s]ₑ ∧ₑ TF_conj t ts
 
-abbrev TF_all_many {n : Nat} (s : S) (ss : List S) : Expr S P V n := ∀ₑ (TF_conj s ss)
+abbrev TF_all_many {n : Nat} (s : S) (ss : List S) : Expr S Pnt V n := ∀ₑ (TF_conj s ss)
 
 scoped syntax "TF[" term,+ "]ₑ" : term
 scoped macro_rules
   | `(TF[$s]ₑ) => `(TF_all $s)
   | `(TF[$s, $ss,*]ₑ) => `(TF_all_many $s [$ss,*])
 
-abbrev B_all {n : Nat} (s : S) : Expr S P V n := ∀ₑ (Bₑ [s]ₑ)
+abbrev B_all {n : Nat} (s : S) : Expr S Pnt V n := ∀ₑ (Bₑ [s]ₑ)
 scoped notation "B[" s "]ₑ" => B_all s
 
 end Notation
@@ -429,13 +429,13 @@ namespace Denotation
 open scoped FinSemitopology
 
 variable
-  {S P V : Type}
+  {S Pnt V : Type}
   [Fintype V]
   [DecidableEq V]
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
-  (μ : Model S P V)
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
+  (μ : Model S Pnt V)
 
 @[simp] abbrev Term.substAt {n : Nat} (k : Fin (n + 1)) (v : V) (t : Term V (n + 1)) : Term V n :=
   match t with
@@ -445,7 +445,7 @@ variable
     else if h : i < k then .bound ⟨i, by omega⟩
     else .bound ⟨i - 1, by omega⟩
 
-@[simp] def substAt {n : Nat} (k : Fin (n + 1)) (v : V) : Expr S P V (n + 1) → Expr S P V n
+@[simp] def substAt {n : Nat} (k : Fin (n + 1)) (v : V) : Expr S Pnt V (n + 1) → Expr S Pnt V n
   | .bot           => .bot
   | .neg e         => .neg (substAt k v e)
   | .and l r       => .and (substAt k v l) (substAt k v r)
@@ -458,13 +458,13 @@ variable
   | .exist e       => .exist (substAt k.succ v e)
   | .exist_affine e => .exist_affine (substAt k.succ v e)
 
-def Expr.size {n : Nat} : Expr S P V n → Nat
+def Expr.size {n : Nat} : Expr S Pnt V n → Nat
   | .bot | .atom _ _ | .eq _ _ => 0
   | .and l r => Expr.size l + Expr.size r +1
   | .neg e | .quorum e | .everywhere e | .tf e | .t e | .exist e | .exist_affine e => Expr.size e +1
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
-theorem substAt_size {n : Nat} (k : Fin (n + 1)) (v : V) (φ : Expr S P V (n + 1)) :
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
+theorem substAt_size {n : Nat} (k : Fin (n + 1)) (v : V) (φ : Expr S Pnt V (n + 1)) :
   Expr.size (substAt k v φ) = Expr.size φ :=
   match φ with
   | .bot => by simp [Expr.size, substAt]
@@ -479,10 +479,10 @@ theorem substAt_size {n : Nat} (k : Fin (n + 1)) (v : V) (φ : Expr S P V (n + 1
   | .exist e => by simp [Expr.size, substAt, substAt_size (n := n + 1) k.succ v e]
   | .exist_affine e => by simp [Expr.size, substAt, substAt_size (n := n + 1) k.succ v e]
 
-def denotation (φ : Expr S P V 0) (p : P) : 𝟯 :=
+def denotation (φ : Expr S Pnt V 0) (p : Pnt) : 𝟯 :=
   let termVal (t : Term V 0) : V := match t with
     | .val v => v
-  let denTerm (s : S) (p' : P) (t : Term V 0) : 𝟯 := μ.ς s p' (termVal t)
+  let denTerm (s : S) (p' : Pnt) (t : Term V 0) : 𝟯 := μ.ς s p' (termVal t)
   match φ, h : Expr.size φ with
   | .bot, _ =>𝐟
   | .and l r, _ => denotation l p ∧ denotation r p
@@ -501,8 +501,8 @@ def denotation (φ : Expr S P V 0) (p : P) : 𝟯 :=
 scoped notation "ₛ[" φ ", " ix "↦" v "]" => substAt ix v φ
 scoped notation "⟦" φ' "⟧ᵈ" => denotation (φ := φ')
 
-abbrev valid_pred (p : P) (φ : Expr S P V 0) : Prop := 𝐛 ≤ ⟦ φ ⟧ᵈ μ p
-abbrev valid (φ : Expr S P V 0) := ∀ p, valid_pred μ p φ
+abbrev valid_pred (p : Pnt) (φ : Expr S Pnt V 0) : Prop := 𝐛 ≤ ⟦ φ ⟧ᵈ μ p
+abbrev valid (φ : Expr S Pnt V 0) := ∀ p, valid_pred μ p φ
 
 scoped notation p " ⊨[" μ "] " φ => valid_pred μ p φ
 scoped notation "⊨[" μ "] " φ => valid μ φ
@@ -516,20 +516,20 @@ open Denotation
 section Notation_3_2_4
 
 variable
-  {V P S : Type}
+  {V Pnt S : Type}
   [Fintype V]
   [DecidableEq V]
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
-  {μ : Model S P V}
-  {p p' : P}
-  {φ : Expr S P V 0}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
+  {μ : Model S Pnt V}
+  {p p' : Pnt}
+  {φ : Expr S Pnt V 0}
 
-theorem den_somewhere_global (p p' : P) : ⟦◇ₑ φ⟧ᵈ μ p = ⟦◇ₑ φ⟧ᵈ μ p' := by simp [denotation]
+theorem den_somewhere_global (p p' : Pnt) : ⟦◇ₑ φ⟧ᵈ μ p = ⟦◇ₑ φ⟧ᵈ μ p' := by simp [denotation]
 theorem somewhere_global : (p ⊨[μ] (◇ₑ φ)) → p' ⊨[μ] (◇ₑ φ) := by simp [den_somewhere_global p p']
 
-theorem den_everywhere_global (p p' : P) : ⟦□ₑ φ⟧ᵈ μ p = ⟦□ₑ φ⟧ᵈ μ p' := by simp [denotation]
+theorem den_everywhere_global (p p' : Pnt) : ⟦□ₑ φ⟧ᵈ μ p = ⟦□ₑ φ⟧ᵈ μ p' := by simp [denotation]
 theorem everywhere_global : (p ⊨[μ] (□ₑ φ)) → p' ⊨[μ] (□ₑ φ) := by simp [den_everywhere_global p p']
 
 theorem valid_iff_everywhere : (⊨[μ] φ) ↔ p ⊨[μ] (□ₑ φ) := by
@@ -537,7 +537,7 @@ theorem valid_iff_everywhere : (⊨[μ] φ) ↔ p ⊨[μ] (□ₑ φ) := by
 theorem valid_iff_everywhere' : (⊨[μ] φ) ↔ p ⊨[μ] (□ₑ φ) := by
   simp [valid, denotation]
 
-theorem den_quorum_global (p p' : P) : ⟦⊡ₑ φ⟧ᵈ μ p = ⟦⊡ₑ φ⟧ᵈ μ p' := by simp [denotation]
+theorem den_quorum_global (p p' : Pnt) : ⟦⊡ₑ φ⟧ᵈ μ p = ⟦⊡ₑ φ⟧ᵈ μ p' := by simp [denotation]
 theorem quorum_global : (p ⊨[μ] (⊡ₑ φ)) → p' ⊨[μ] (⊡ₑ φ) := by simp [den_quorum_global p p']
 theorem quorum_global' : (p ⊨[μ] (⊡ₑ φ)) ↔ ⊨[μ] (⊡ₑ φ) := by
   constructor <;> intro h
@@ -548,7 +548,7 @@ theorem quorum_commut_T' : (p ⊨[μ] Tₑ (⊡ₑ φ)) → (p' ⊨[μ] ⊡ₑ (
 theorem quorum_commut_T : (⊨[μ] Tₑ (⊡ₑ φ)) ↔ (⊨[μ] ⊡ₑ (Tₑ φ)) := by
   constructor <;> (intro h _; simpa [denotation] using h default)
 
-theorem den_contraquorum_global (p p' : P) : ⟦⟐ₑ φ⟧ᵈ μ p = ⟦⟐ₑ φ⟧ᵈ μ p' := by simp [denotation]
+theorem den_contraquorum_global (p p' : Pnt) : ⟦⟐ₑ φ⟧ᵈ μ p = ⟦⟐ₑ φ⟧ᵈ μ p' := by simp [denotation]
 theorem contraquorum_global : (p ⊨[μ] (⟐ₑ φ)) → p' ⊨[μ] (⟐ₑ φ) := by simp [den_contraquorum_global p p']
 theorem contraquorum_global' : (p ⊨[μ] (⟐ₑ φ)) ↔ ⊨[μ] (⟐ₑ φ) := by
   constructor <;> intro h
@@ -567,54 +567,54 @@ open scoped FinSemitopology
 open scoped Three.Function
 
 variable
-  {S P V : Type}
+  {S Pnt V : Type}
   [Fintype V]
   [DecidableEq V]
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
-  {μ : Model S P V}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
+  {μ : Model S Pnt V}
   {s : S}
-  {p p' : P}
+  {p p' : Pnt}
   {n : Nat}
   {k : Fin (n + 1)}
   {v : V}
-  {φ ψ : Expr S P V 0}
-  {α β : Expr S P V (n + 1)}
-  {φ₁ : Expr S P V 1}
+  {φ ψ : Expr S Pnt V 0}
+  {α β : Expr S Pnt V (n + 1)}
+  {φ₁ : Expr S Pnt V 1}
   {Γ : List.Vector V n}
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_impl : ₛ[α →ₑ β, k ↦ v] = (ₛ[α, k ↦ v] →ₑ ₛ[β, k ↦ v]) := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_or : ₛ[α ∨ₑ β, k ↦ v] = (ₛ[α, k ↦ v] ∨ₑ ₛ[β, k ↦ v]) := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_and : ₛ[α ∧ₑ β, k ↦ v] = (ₛ[α, k ↦ v] ∧ₑ ₛ[β, k ↦ v]) := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_tf : ₛ[TFₑ α, k ↦ v] = TFₑ ₛ[α, k ↦ v] := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
-@[substSimp] theorem substAt_tf_all : ₛ[TF[s]ₑ, k ↦ v] = (TF[s]ₑ : Expr S P V n) := by
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
+@[substSimp] theorem substAt_tf_all : ₛ[TF[s]ₑ, k ↦ v] = (TF[s]ₑ : Expr S Pnt V n) := by
   simp; intro q; exact absurd q (Fin.succ_ne_zero k).symm
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_somewhere : ₛ[◇ₑ α, k ↦ v] = (◇ₑ ₛ[α, k ↦ v]) := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_quorum : ₛ[⊡ₑ α, k ↦ v] = (⊡ₑ ₛ[α, k ↦ v]) := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
-@[substSimp] theorem substAt_exists {n} {k : Fin (n + 1)} {α : Expr S P V (n + 2)} :
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
+@[substSimp] theorem substAt_exists {n} {k : Fin (n + 1)} {α : Expr S Pnt V (n + 2)} :
   ₛ[∃⁎ₑ α, k ↦ v] = ∃⁎ₑ ₛ[α, k.succ ↦ v] := by simp
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_atom {t : Term V (n +1)}
-  : ₛ[[ s; t]ₑ, k ↦ v] = ([s; Term.substAt k v t]ₑ : Expr S P V _) := by simp [substAt]
+  : ₛ[[ s; t]ₑ, k ↦ v] = ([s; Term.substAt k v t]ₑ : Expr S Pnt V _) := by simp [substAt]
 
-omit [Fintype V] [DecidableEq V] [Fintype P] [DecidableEq P] [Inhabited P] in
+omit [Fintype V] [DecidableEq V] [Fintype Pnt] [DecidableEq Pnt] [Inhabited Pnt] in
 @[substSimp] theorem substAt_bound {n : Nat} : Term.substAt (n := n) 0 v (.bound 0) = .val (scope := n) v := by simp
 
 @[simp] theorem denotation_neg : ⟦¬ₑ φ⟧ᵈ μ p = (¬ ⟦φ⟧ᵈ μ p) := by
@@ -673,7 +673,7 @@ theorem valid_and : (p ⊨[μ] φ ∧ₑ ψ) ↔ (p ⊨[μ] φ) ∧ p ⊨[μ] ψ
 
 -- The paper has "weak implication" → and "strong implication" ⇀. In the Lean
 -- formalisation we arrange the mathematics equivalently but slightly
--- differently. Because we treat P ⇀ Q as an abbreviation for P → T Q,
+-- differently. Because we treat Pnt ⇀ Q as an abbreviation for Pnt → T Q,
 -- we use only one modus ponens principle, as follows:
 theorem valid_impl : (p ⊨[μ] (φ →ₑ ψ)) ↔ ((⟦φ⟧ᵈ μ p = 𝐭) → p ⊨[μ] ψ) := by
   simp [Lemmas.and_le]

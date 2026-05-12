@@ -31,10 +31,10 @@ open Denotation
 namespace CA
 
 variable
-  {P V : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {Pnt V : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
 
@@ -117,7 +117,7 @@ inductive Sig where
 
 export Sig (input echo₁ echo₂ output)
 
-class Thy (μ : Model Sig P Val) where
+class Thy (μ : Model Sig Pnt Val) where
   CaEcho1? : ⊨[μ] ∀ₑ ([echo₁]ₑ ⇀ₑ ◇ₑ [input]ₑ)
   CaEcho2? : ⊨[μ] ∀ₑ ([echo₂]ₑ →ₑ ⊡ₑ [echo₁]ₑ)
   CaOutput? : ⊨[μ] ([output, 𝟢]ₑ →ₑ ⊡ₑ [echo₂, 𝟢]ₑ) ∧ₑ
@@ -140,9 +140,9 @@ open Val
 namespace Thy
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
-  {p : P}
+  {p : Pnt}
   {v v' : Val}
 
 theorem CaCorrect1 (s : Sig) : ⊨[μ] ⊡ₑ TF[s]ₑ := by
@@ -275,7 +275,7 @@ end Thy
 namespace Proposition_5_3_3
 
 variable
-  (μ : Model Sig P Val)
+  (μ : Model Sig Pnt Val)
   [ca : Thy μ]
   [twined : Twined3 μ.S]
   {v v' : Val}
@@ -325,10 +325,10 @@ end Proposition_5_3_3
 namespace Lemma_5_3_5
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   {v v' : Val}
-  {p : P}
+  {p : Pnt}
 
 theorem t1 : p ⊨[μ] ¬ₑ [input, ½]ₑ := by
   simp [denotation]; exact ca.CaInput_half
@@ -385,11 +385,11 @@ end Lemma_5_3_5
 namespace Proposition_5_3_6
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   [twined : Twined3 μ.S]
   {v v' : Val}
-  {p : P}
+  {p : Pnt}
 
 omit ca in
 theorem quorum_and_TF {s} (h1 : ⊨[μ] ⊡ₑ [s, v]ₑ) (h2 : ⊨[μ] ⊡ₑ (TFₑ [s, v]ₑ)) : ⊨[μ] Tₑ (◇ₑ [s, v]ₑ) := by
@@ -469,10 +469,10 @@ end Proposition_5_3_6
 namespace Lemma_5_3_8
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   {v v' : Val}
-  {p : P}
+  {p : Pnt}
 
 theorem t1 [twined : Twined3 μ.S] (h : ⊨[μ] ⊡ₑ [echo₁, v]ₑ) : ⊨[μ] Tₑ (⟐ₑ [echo₁, v]ₑ) := by
   intro p; have c := ca.CaCorrect_simp (v := v) echo₁
@@ -501,7 +501,7 @@ end Lemma_5_3_8
 namespace Corollary_5_3_9
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   {v : Val}
 
@@ -515,7 +515,7 @@ end Corollary_5_3_9
 namespace Corollary_5_3_10
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   [twined : Twined3 μ.S]
   {v : Val}
@@ -644,7 +644,7 @@ end Corollary_5_3_10
 namespace Proposition_5_3_11
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   [twined : Twined3 μ.S]
   {v : Val}
@@ -700,7 +700,7 @@ end Proposition_5_3_11
 namespace Lemma_5_4_2
 
 variable
-  {μ : Model Sig P Val}
+  {μ : Model Sig Pnt Val}
   [ca : Thy μ]
   [twined : Twined3 μ.S]
   {v : Val}

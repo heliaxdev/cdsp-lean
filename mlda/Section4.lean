@@ -30,10 +30,10 @@ open Denotation
 section Definition_4_1_2
 
 variable
-  {P V : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {Pnt V : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
 
@@ -45,7 +45,7 @@ inductive BBSig where
 
 export BBSig (broadcast echo ready deliver)
 
-class ThyBB (μ : Model BBSig P V) where
+class ThyBB (μ : Model BBSig Pnt V) where
   BrDeliver? : ⊨[μ] ∀ₑ ([deliver]ₑ →ₑ ⊡ₑ [ready]ₑ)
   BrReady? : ⊨[μ] ∀ₑ ([ready]ₑ →ₑ ⊡ₑ [echo]ₑ)
   BrEcho? : ⊨[μ] ∀ₑ ([echo]ₑ →ₑ ◇ₑ [broadcast]ₑ)
@@ -63,7 +63,7 @@ class ThyBB (μ : Model BBSig P V) where
 namespace ThyBB
 
   variable
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
 
 theorem BrDeliver!' {p} {v} : (⊨[μ] Tₑ (⊡ₑ [ready, v]ₑ)) → 𝐛 ≤ μ.ς deliver p v := by
@@ -111,15 +111,15 @@ end Definition_4_1_2
 namespace Lemma_4_2_4
 
 variable
-  {V P : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {V Pnt : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  (μ : Model BBSig P V)
+  (μ : Model BBSig Pnt V)
   [bb : ThyBB μ]
-  {p : P}
+  {p : Pnt}
   {v : V}
 
 abbrev P1 := (⊨[μ] TF[.broadcast]ₑ) ∧
@@ -163,21 +163,21 @@ end Lemma_4_2_4
 namespace Lemmas
 
 variable
-  {V P : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {V Pnt : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
-  {p p' : P}
+  {p p' : Pnt}
   {v v' : V}
 
 -- This lemma is similar to Lemma 4.2.6 in the pdf
 theorem when_broadcast : μ.ς broadcast p v = 𝐭 →
   Lemma_4_2_4.P1 μ ∧
-  ∀ {v' : V} {p' : P}, μ.ς broadcast p' v' = 𝐭 → v' = v := by
+  ∀ {v' : V} {p' : Pnt}, μ.ς broadcast p' v' = 𝐭 → v' = v := by
   intro h; cases Lemma_4_2_4.t μ
   next k => constructor
             · assumption
@@ -210,13 +210,13 @@ end Lemmas
 namespace Lemma_4_2_7
 
 variable
-  {V P : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {V Pnt : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
   {v : V}
 
@@ -260,13 +260,13 @@ end Lemma_4_2_7
 namespace Lemma_4_2_9
 
 variable
-  {V P : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {V Pnt : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
   {v : V}
 
@@ -295,13 +295,13 @@ end Lemma_4_2_9
 namespace Proposition_4_2_10
 
 variable
-  {V P : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {V Pnt : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
   {v : V}
 
@@ -326,13 +326,13 @@ end Proposition_4_2_10
 namespace Lemma_4_2_11
 
 variable
-  {V P : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {V Pnt : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [twined : Twined3 μ.S]
   [bb : ThyBB μ]
   {v v' : V}
@@ -398,13 +398,13 @@ end Lemma_4_2_11
 namespace Proposition_4_2_12
 
 variable
-  {P V : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {Pnt V : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
   [twined : Twined3 μ.S]
   {v : V}
@@ -443,13 +443,13 @@ end Proposition_4_2_12
 namespace Proposition_4_2_13
 
 variable
-  {P V : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {Pnt V : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
   [twined : Twined3 μ.S]
   {v : V}
@@ -478,13 +478,13 @@ end Proposition_4_2_13
 namespace Proposition_4_2_14
 
 variable
-  {P V : Type}
-  [Fintype P]
-  [DecidableEq P]
-  [Inhabited P]
+  {Pnt V : Type}
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  [Inhabited Pnt]
   [Fintype V]
   [DecidableEq V]
-  {μ : Model BBSig P V}
+  {μ : Model BBSig Pnt V}
   [bb : ThyBB μ]
   [twined : Twined3 μ.S]
   {v : V}

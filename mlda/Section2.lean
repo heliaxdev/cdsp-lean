@@ -590,17 +590,17 @@ end Three
 
 section Definition_2_3_1
 
-/-- A finite semitopology over a type `P` of participants.
+/-- A finite semitopology over a type `Pnt` of participants.
 
-The `Fintype P` assumption ensures `P` is finite, which is needed so that folds over the full set
-of participants (e.g. `□` and `◇`) are computable via `Finset.univ`. In practice, `P` represents
+The `Fintype Pnt` assumption ensures `Pnt` is finite, which is needed so that folds over the full set
+of participants (e.g. `□` and `◇`) are computable via `Finset.univ`. In practice, `Pnt` represents
 the set of participants in a distributed algorithm, which is always finite. Note that the paper does
 not impose this assumption - it is an artifact of constructivity of the Lean formalisation. -/
-structure FinSemitopology (P : Type) [Nonempty P] [DecidableEq P] [Fintype P] where
-  Opn : Finset (Finset P)
+structure FinSemitopology (Pnt : Type) [Nonempty Pnt] [DecidableEq Pnt] [Fintype Pnt] where
+  Opn : Finset (Finset Pnt)
   empty_open : ∅ ∈ Opn
   univ_open : Fintype.elems ∈ Opn
-  isOpen_sUnion : ∀ s : Finset (Finset P), (∀ t ∈ s, t ∈ Opn) → s.biUnion id ∈ Opn
+  isOpen_sUnion : ∀ s : Finset (Finset Pnt), (∀ t ∈ s, t ∈ Opn) → s.biUnion id ∈ Opn
 
 end Definition_2_3_1
 
@@ -612,18 +612,18 @@ open Three.Atom
 section Definition_2_3_2
 
 variable
-  {P : Type}
-  [Fintype P]
-  [Nonempty P]
-  [DecidableEq P]
-  {Q : Finset P}
-  {S : FinSemitopology P}
-  (f f' : P → 𝟯)
+  {Pnt : Type}
+  [Fintype Pnt]
+  [Nonempty Pnt]
+  [DecidableEq Pnt]
+  {Q : Finset Pnt}
+  {S : FinSemitopology Pnt}
+  (f f' : Pnt → 𝟯)
   (a b : 𝟯)
 
-abbrev ℙ : Finset P := Finset.univ
+abbrev ℙ : Finset Pnt := Finset.univ
 
-def Opn1 : Finset (Finset P) := S.Opn.filter (·.Nonempty)
+def Opn1 : Finset (Finset Pnt) := S.Opn.filter (·.Nonempty)
 
 def univ_in_Opn1 : Finset.univ ∈ S.Opn1 := by
   simp [Opn1]; exact S.univ_open
@@ -637,13 +637,13 @@ scoped notation "◇" => somewhere
 -- You will see ⊡(S) (see `quorum` below) and ⟐(S)
 -- (see `contraquorum`) below. The S needs to be an explicit argument
 -- of quorum/contraquorum because S is mentioned in the definition of ⊡ and ⟐
--- (via S.Opn1), but S is not mentioned in the type (P → 𝟯 → 𝟯), so Lean's
+-- (via S.Opn1), but S is not mentioned in the type (Pnt → 𝟯 → 𝟯), so Lean's
 -- unification cannot infer it.
-abbrev quorum (S : FinSemitopology P) (f : P → 𝟯) := ⋁ S.Opn1 (fun o => ⋀ o f)
+abbrev quorum (S : FinSemitopology Pnt) (f : Pnt → 𝟯) := ⋁ S.Opn1 (fun o => ⋀ o f)
 scoped notation "⊡" => quorum
 scoped notation "⊡" "(" S ")" => quorum S
 
-abbrev contraquorum (S : FinSemitopology P) (f : P → 𝟯) := ⋀ S.Opn1 (fun o => ⋁ o f)
+abbrev contraquorum (S : FinSemitopology Pnt) (f : Pnt → 𝟯) := ⋀ S.Opn1 (fun o => ⋁ o f)
 scoped notation "⟐" => contraquorum
 scoped notation "⟐" "(" S ")" => contraquorum S
 
@@ -652,25 +652,25 @@ end Definition_2_3_2
 section
 
 variable
-  {P : Type}
-  [Fintype P]
-  {Q : Finset P}
-  {f f' : P → 𝟯}
+  {Pnt : Type}
+  [Fintype Pnt]
+  {Q : Finset Pnt}
+  {f f' : Pnt → 𝟯}
   (a b : 𝟯)
 
 open Three.Lemmas
 
 theorem everywhere_true : □ f = 𝐭 ↔ ∀ x, f x = 𝐭 := by simp [everywhere, meet_true]
 
-theorem everywhere_byzantine : □ f = 𝐛 ↔ (∀ (x : P), 𝐛 ≤ f x) ∧ ∃ x, f x = 𝐛 := by
+theorem everywhere_byzantine : □ f = 𝐛 ↔ (∀ (x : Pnt), 𝐛 ≤ f x) ∧ ∃ x, f x = 𝐛 := by
   simp [everywhere]
 
 theorem somewhere_true : ◇ f = 𝐭 ↔ ∃ x, f x = 𝐭 := by simp [somewhere, join_true]
 
 variable
-  [DecidableEq P]
-  [Nonempty P]
-  {S : FinSemitopology P}
+  [DecidableEq Pnt]
+  [Nonempty Pnt]
+  {S : FinSemitopology Pnt}
 
 theorem quorum_true : ⊡(S) f = 𝐭 ↔ ∃ s ∈ S.Opn1, ∀ x ∈ s, f x = 𝐭 := by
   simp [quorum]
@@ -687,8 +687,8 @@ end
 namespace Lemma_2_3_3
 
 variable
-  {P : Type}
-  {f f' : P → 𝟯}
+  {Pnt : Type}
+  {f f' : Pnt → 𝟯}
   {a : 𝟯}
 
 open Three.Lemmas
@@ -699,17 +699,17 @@ theorem p1_1 : (¬ (f ∧ f')) = (¬ f ∨ ¬ f') := by
 theorem p1_2 : (¬ (f ∨ f')) = (¬ f ∧ ¬ f') := by
   funext x; unfold Three.Function.neg Three.Function.and Three.Function.or; simp
 
-theorem p1_3 [Fintype P] : (¬ (◇ (¬ f))) = □ f := by
+theorem p1_3 [Fintype Pnt] : (¬ (◇ (¬ f))) = □ f := by
   simp [somewhere, everywhere, join_neg];
 
-theorem p1_4 [Fintype P] : (¬ (□ (¬ f))) = ◇ f := by
+theorem p1_4 [Fintype Pnt] : (¬ (□ (¬ f))) = ◇ f := by
   simp [somewhere, everywhere, meet_neg];
 
-theorem p1_5 [Nonempty P] [Fintype P] [DecidableEq P] {S : FinSemitopology P}
+theorem p1_5 [Nonempty Pnt] [Fintype Pnt] [DecidableEq Pnt] {S : FinSemitopology Pnt}
   : (¬ (⟐(S) (¬ f))) = ⊡(S) f := by
   simp [contraquorum, join_neg, Three.Function.neg_fold, meet_neg]
 
-theorem p1_6 [Nonempty P] [Fintype P] [DecidableEq P] {S : FinSemitopology P}
+theorem p1_6 [Nonempty Pnt] [Fintype Pnt] [DecidableEq Pnt] {S : FinSemitopology Pnt}
   : (¬ (⊡(S) (¬ f))) = ⟐(S) f := by
   simp [quorum, meet_neg, Three.Function.neg_fold, join_neg]
 
@@ -721,8 +721,8 @@ end Lemma_2_3_3
 namespace Remark_2_3_5
 
 variable
-  {P : Type}
-  {f : P → 𝟯}
+  {Pnt : Type}
+  {f : Pnt → 𝟯}
   {a : 𝟯}
 
 open Three
@@ -746,7 +746,7 @@ instance : MapMax T where
 
 variable
   (M : 𝟯 → 𝟯) -- In this section M stands for T and TB
-  {Q : Finset P}
+  {Q : Finset Pnt}
   [PreservesTruth M]
 
 theorem map_meet [MapMin M]
@@ -757,20 +757,20 @@ theorem map_join [MapMax M]
   : ⋁ Q (M ∘ f) = M (⋁ Q f) := by
   simpa [PreservesTruth.map_false] using Finset.fold_hom (b := 𝐟) (m := M) map_max
 
-theorem map_everywhere [Fintype P] [MapMin M]
+theorem map_everywhere [Fintype Pnt] [MapMin M]
   : □ (M ∘ f) = M (□ f) := by
   simpa [PreservesTruth.map_true] using Finset.fold_hom (b := 𝐭) (m := M) map_min
 
-theorem map_somewhere [Fintype P] [MapMax M] : ◇ (M ∘ f) = M (◇ f) := by
+theorem map_somewhere [Fintype Pnt] [MapMax M] : ◇ (M ∘ f) = M (◇ f) := by
   simpa [PreservesTruth.map_false] using Finset.fold_hom (b := 𝐟) (m := M) map_max
 
-theorem map_quorum [Nonempty P] [DecidableEq P] [Fintype P] {S : FinSemitopology P} [MapMax M] [MapMin M]
+theorem map_quorum [Nonempty Pnt] [DecidableEq Pnt] [Fintype Pnt] {S : FinSemitopology Pnt} [MapMax M] [MapMin M]
   : ⊡(S) (M ∘ f) = M (⊡(S) f) := by
   calc (⋁ Opn1 fun o ↦ ⋀ o (M ∘ f)) = ⋁ Opn1 fun o ↦ M (⋀ o f) :=
                 by conv => lhs; arg 2; intro o; apply map_meet
        _ = M (⋁ S.Opn1 fun o ↦ (⋀ o f)) := by apply map_join
 
-theorem map_contraquorum [Nonempty P] [DecidableEq P] [Fintype P] {S : FinSemitopology P} [MapMax M] [MapMin M]
+theorem map_contraquorum [Nonempty Pnt] [DecidableEq Pnt] [Fintype Pnt] {S : FinSemitopology Pnt} [MapMax M] [MapMin M]
   : ⟐(S) (M ∘ f) = M (⟐(S) f) := by
   calc (⋀ Opn1 fun o ↦ ⋁ o (M ∘ f)) = ⋀ Opn1 fun o ↦ M (⋁ o f) :=
                 by conv => lhs; arg 2; intro o; apply map_join
@@ -781,13 +781,13 @@ end Remark_2_3_5
 namespace Lemma_2_3_6
 
 variable
-  {P : Type}
-  (f f' : P → 𝟯)
+  {Pnt : Type}
+  (f f' : Pnt → 𝟯)
   (a : 𝟯)
-  [Fintype P]
-  [Nonempty P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
+  [Fintype Pnt]
+  [Nonempty Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
 
 open Three.Lemmas
 
@@ -829,13 +829,13 @@ namespace Lemma_2_3_7
 open Three.Lemmas
 
 variable
-  {P : Type}
-  {f f' : P → 𝟯}
+  {Pnt : Type}
+  {f f' : Pnt → 𝟯}
   (a : 𝟯)
-  [Fintype P]
-  [Nonempty P]
-  [topo : DecidableEq P]
-  {S : FinSemitopology P}
+  [Fintype Pnt]
+  [Nonempty Pnt]
+  [topo : DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
 
 theorem p1 : (⊡(S) f ∧ ⟐(S) f') ≤ ◇ (f ∧ f') := by
   apply le_by_cases
@@ -876,7 +876,7 @@ end Lemma_2_3_7
 
 section Definition_2_4_1
 
-class Twined3 {P : Type} [Nonempty P] [DecidableEq P] [Fintype P] [DecidableEq P] (S : FinSemitopology P) where
+class Twined3 {Pnt : Type} [Nonempty Pnt] [DecidableEq Pnt] [Fintype Pnt] [DecidableEq Pnt] (S : FinSemitopology Pnt) where
   twined : ∀ {a b c}, a ∈ S.Opn1 → b ∈ S.Opn1 → c ∈ S.Opn1 → (a ∩ b ∩ c).Nonempty
 
 export Twined3 (twined)
@@ -892,12 +892,12 @@ namespace Theorem_2_4_5
 open Three.Lemmas
 
 variable
-  {P : Type}
-  {f f' : P → 𝟯}
-  [Nonempty P]
-  [Fintype P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
+  {Pnt : Type}
+  {f f' : Pnt → 𝟯}
+  [Nonempty Pnt]
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
   [Twined3 S]
 
 theorem t : (⊡(S) f ∧ ⊡(S) f') ≤ ⟐(S) (f ∧ f') := by
@@ -942,12 +942,12 @@ end Theorem_2_4_5
 namespace Corollary_2_4_6
 
 variable
-  {P : Type}
-  {f f' : P → 𝟯}
-  [Nonempty P]
-  [Fintype P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
+  {Pnt : Type}
+  {f f' : Pnt → 𝟯}
+  [Nonempty Pnt]
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
   [twined : Twined3 S]
 
 open Three.Lemmas
@@ -966,12 +966,12 @@ namespace Remark_2_4_7
 open Three.Lemmas
 
 variable
-  {P : Type}
-  {f f' : P → 𝟯}
-  [Fintype P]
-  [Nonempty P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
+  {Pnt : Type}
+  {f f' : Pnt → 𝟯}
+  [Fintype Pnt]
+  [Nonempty Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
   (q : ⊨ (⊡(S) (TF ∘ f)))
 
 include q in
@@ -999,7 +999,7 @@ theorem t2 [twined : Twined3 S] : ⊨ (⊡(S) f) → ⊨ (T (⟐(S) f)) := by
   have h := Theorem_2_4_5.t (f := f) (f' := TF ∘ f) (S := S)
   have v : ⊨ (⊡(S) f ∧ ⊡(S) (TF ∘ f)) := byzantine_le_and.mpr ⟨p, q⟩
   have hv : ⊨ (⟐(S) (f ∧ TF ∘ f)) := le_implies_valid h v
-  have eq : ((f ∧ TF ∘ f : P → 𝟯)) = T ∘ f := by
+  have eq : ((f ∧ TF ∘ f : Pnt → 𝟯)) = T ∘ f := by
     funext x; simp [Three.Function.and]; cases f x <;> rfl
   rw [eq, Remark_2_3_5.map_contraquorum (M := T)] at hv
   exact hv
@@ -1049,14 +1049,14 @@ namespace Remark_2_4_8
 open Three.Lemmas
 
 variable
-  {P : Type}
-  [Nonempty P]
-  [Fintype P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
+  {Pnt : Type}
+  [Nonempty Pnt]
+  [Fintype Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
 
-theorem t (h : ∀ (f f' : P → 𝟯), (⊡(S) f ∧ ⊡(S) f') ≤ ⟐(S) (f ∧ f'))
-    {a b c : Finset P} (ha : a ∈ S.Opn1) (hb : b ∈ S.Opn1) (hc : c ∈ S.Opn1)
+theorem t (h : ∀ (f f' : Pnt → 𝟯), (⊡(S) f ∧ ⊡(S) f') ≤ ⟐(S) (f ∧ f'))
+    {a b c : Finset Pnt} (ha : a ∈ S.Opn1) (hb : b ∈ S.Opn1) (hc : c ∈ S.Opn1)
     : (a ∩ b ∩ c).Nonempty := by
   specialize h (fun p => if p ∈ a then 𝐭 else 𝐛)
                (fun p => if p ∈ b then 𝐭 else 𝐛)
@@ -1075,14 +1075,14 @@ end Remark_2_4_8
 section Definition_2_5_1
 
 variable
-  {P : Type}
-  [Fintype P]
-  [Nonempty P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
-  {vote observe : P → 𝟯}
+  {Pnt : Type}
+  [Fintype Pnt]
+  [Nonempty Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
+  {vote observe : Pnt → 𝟯}
 
-class ThyVote (S : FinSemitopology P) (vote observe : P → 𝟯) where
+class ThyVote (S : FinSemitopology Pnt) (vote observe : Pnt → 𝟯) where
   observe? p : (observe p → ⊡(S) vote) = 𝐭
   observe! p : (⊡(S) vote ⇀ observe p) = 𝐭
   correct : ⊡(S) (TF ∘ vote) = 𝐭
@@ -1095,12 +1095,12 @@ end Definition_2_5_1
 namespace Lemma_2_5_6
 
 variable
-  {P : Type}
-  [Fintype P]
-  [Nonempty P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
-  {vote observe : P → 𝟯}
+  {Pnt : Type}
+  [Fintype Pnt]
+  [Nonempty Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
+  {vote observe : Pnt → 𝟯}
   [i : ThyVote S vote observe]
 
 open Three.Lemmas
@@ -1130,12 +1130,12 @@ end Lemma_2_5_6
 namespace Proposition_2_5_7
 
 variable
-  {P : Type}
-  [Fintype P]
-  [e : Nonempty P]
-  [DecidableEq P]
-  {S : FinSemitopology P}
-  {vote observe : P → 𝟯}
+  {Pnt : Type}
+  [Fintype Pnt]
+  [e : Nonempty Pnt]
+  [DecidableEq Pnt]
+  {S : FinSemitopology Pnt}
+  {vote observe : Pnt → 𝟯}
   [i : ThyVote S vote observe]
 
 open Three.Lemmas
