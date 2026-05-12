@@ -597,10 +597,10 @@ of participants (e.g. `□` and `◇`) are computable via `Finset.univ`. In prac
 the set of participants in a distributed algorithm, which is always finite. Note that the paper does
 not impose this assumption - it is an artifact of constructivity of the Lean formalisation. -/
 structure FinSemitopology (P : Type) [Nonempty P] [DecidableEq P] [Fintype P] where
-  Open : Finset (Finset P)
-  empty_open : ∅ ∈ Open
-  univ_open : Fintype.elems ∈ Open
-  isOpen_sUnion : ∀ s : Finset (Finset P), (∀ t ∈ s, t ∈ Open) → s.biUnion id ∈ Open
+  Opn : Finset (Finset P)
+  empty_open : ∅ ∈ Opn
+  univ_open : Fintype.elems ∈ Opn
+  isOpen_sUnion : ∀ s : Finset (Finset P), (∀ t ∈ s, t ∈ Opn) → s.biUnion id ∈ Opn
 
 end Definition_2_3_1
 
@@ -623,10 +623,10 @@ variable
 
 abbrev ℙ : Finset P := Finset.univ
 
-def Open1 : Finset (Finset P) := S.Open.filter (·.Nonempty)
+def Opn1 : Finset (Finset P) := S.Opn.filter (·.Nonempty)
 
-def univ_in_Open1 : Finset.univ ∈ S.Open1 := by
-  simp [Open1]; exact S.univ_open
+def univ_in_Opn1 : Finset.univ ∈ S.Opn1 := by
+  simp [Opn1]; exact S.univ_open
 
 abbrev everywhere := ⋀ ℙ f
 scoped notation "□" => everywhere
@@ -637,13 +637,13 @@ scoped notation "◇" => somewhere
 -- You will see ⊡(S) (see `quorum` below) and ⟐(S)
 -- (see `contraquorum`) below. The S needs to be an explicit argument
 -- of quorum/contraquorum because S is mentioned in the definition of ⊡ and ⟐
--- (via S.Open1), but S is not mentioned in the type (P → 𝟯 → 𝟯), so Lean's
+-- (via S.Opn1), but S is not mentioned in the type (P → 𝟯 → 𝟯), so Lean's
 -- unification cannot infer it.
-abbrev quorum (S : FinSemitopology P) (f : P → 𝟯) := ⋁ S.Open1 (fun o => ⋀ o f)
+abbrev quorum (S : FinSemitopology P) (f : P → 𝟯) := ⋁ S.Opn1 (fun o => ⋀ o f)
 scoped notation "⊡" => quorum
 scoped notation "⊡" "(" S ")" => quorum S
 
-abbrev contraquorum (S : FinSemitopology P) (f : P → 𝟯) := ⋀ S.Open1 (fun o => ⋁ o f)
+abbrev contraquorum (S : FinSemitopology P) (f : P → 𝟯) := ⋀ S.Opn1 (fun o => ⋁ o f)
 scoped notation "⟐" => contraquorum
 scoped notation "⟐" "(" S ")" => contraquorum S
 
@@ -672,14 +672,14 @@ variable
   [Nonempty P]
   {S : FinSemitopology P}
 
-theorem quorum_true : ⊡(S) f = 𝐭 ↔ ∃ s ∈ S.Open1, ∀ x ∈ s, f x = 𝐭 := by
+theorem quorum_true : ⊡(S) f = 𝐭 ↔ ∃ s ∈ S.Opn1, ∀ x ∈ s, f x = 𝐭 := by
   simp [quorum]
 
 theorem quorum_valid : 𝐛 ≤ ⊡(S) f ↔
-                       (∃ s ∈ S.Open1, ∀ x ∈ s, 𝐛 ≤ f x) := by
+                       (∃ s ∈ S.Opn1, ∀ x ∈ s, 𝐛 ≤ f x) := by
   simp [quorum, le_join, byzantine_le_meet]
 
-theorem contraquorum_true : ⟐(S) f = 𝐭 ↔ ∀ s ∈ S.Open1, ∃ x ∈ s, f x = 𝐭 := by
+theorem contraquorum_true : ⟐(S) f = 𝐭 ↔ ∀ s ∈ S.Opn1, ∃ x ∈ s, f x = 𝐭 := by
   simp [contraquorum]
 
 end
@@ -766,15 +766,15 @@ theorem map_somewhere [Fintype P] [MapMax M] : ◇ (M ∘ f) = M (◇ f) := by
 
 theorem map_quorum [Nonempty P] [DecidableEq P] [Fintype P] {S : FinSemitopology P} [MapMax M] [MapMin M]
   : ⊡(S) (M ∘ f) = M (⊡(S) f) := by
-  calc (⋁ Open1 fun o ↦ ⋀ o (M ∘ f)) = ⋁ Open1 fun o ↦ M (⋀ o f) :=
+  calc (⋁ Opn1 fun o ↦ ⋀ o (M ∘ f)) = ⋁ Opn1 fun o ↦ M (⋀ o f) :=
                 by conv => lhs; arg 2; intro o; apply map_meet
-       _ = M (⋁ S.Open1 fun o ↦ (⋀ o f)) := by apply map_join
+       _ = M (⋁ S.Opn1 fun o ↦ (⋀ o f)) := by apply map_join
 
 theorem map_contraquorum [Nonempty P] [DecidableEq P] [Fintype P] {S : FinSemitopology P} [MapMax M] [MapMin M]
   : ⟐(S) (M ∘ f) = M (⟐(S) f) := by
-  calc (⋀ Open1 fun o ↦ ⋁ o (M ∘ f)) = ⋀ Open1 fun o ↦ M (⋁ o f) :=
+  calc (⋀ Opn1 fun o ↦ ⋁ o (M ∘ f)) = ⋀ Opn1 fun o ↦ M (⋁ o f) :=
                 by conv => lhs; arg 2; intro o; apply map_join
-       _ = M (⋀ S.Open1 fun o ↦ (⋁ o f)) := by apply map_meet (M := M)
+       _ = M (⋀ S.Opn1 fun o ↦ (⋁ o f)) := by apply map_meet (M := M)
 
 end Remark_2_3_5
 
@@ -865,7 +865,7 @@ theorem c2 : ⊨ (⟐(S) f) → ⊨ (◇ f) := by
   simp [contraquorum, le_meet] at p
   have y := p Finset.univ ?_
   simp at y; exact y
-  simp [Open1]; exact S.univ_open
+  simp [Opn1]; exact S.univ_open
 
 theorem c3 : ⊨ (⊡(S) (TF ∘ f)) → ⊨ (⟐(S) f) → ⊨ (T (◇ f)) := by
   intro h g; rw [Valid] at h g; have l := le_and.mpr ⟨h, g⟩
@@ -877,7 +877,7 @@ end Lemma_2_3_7
 section Definition_2_4_1
 
 class Twined3 {P : Type} [Nonempty P] [DecidableEq P] [Fintype P] [DecidableEq P] (S : FinSemitopology P) where
-  twined : ∀ {a b c}, a ∈ S.Open1 → b ∈ S.Open1 → c ∈ S.Open1 → (a ∩ b ∩ c).Nonempty
+  twined : ∀ {a b c}, a ∈ S.Opn1 → b ∈ S.Opn1 → c ∈ S.Opn1 → (a ∩ b ∩ c).Nonempty
 
 export Twined3 (twined)
 
@@ -975,7 +975,7 @@ variable
   (q : ⊨ (⊡(S) (TF ∘ f)))
 
 include q in
-theorem q' : ∃ s ∈ S.Open1, ∀ x ∈ s, ⊨ (TF (f x)) := by
+theorem q' : ∃ s ∈ S.Opn1, ∀ x ∈ s, ⊨ (TF (f x)) := by
   obtain ⟨s, sm, ps⟩ := by simpa [quorum_valid] using q;
   exists s
 
@@ -1056,7 +1056,7 @@ variable
   {S : FinSemitopology P}
 
 theorem t (h : ∀ (f f' : P → 𝟯), (⊡(S) f ∧ ⊡(S) f') ≤ ⟐(S) (f ∧ f'))
-    {a b c : Finset P} (ha : a ∈ S.Open1) (hb : b ∈ S.Open1) (hc : c ∈ S.Open1)
+    {a b c : Finset P} (ha : a ∈ S.Opn1) (hb : b ∈ S.Opn1) (hc : c ∈ S.Opn1)
     : (a ∩ b ∩ c).Nonempty := by
   specialize h (fun p => if p ∈ a then 𝐭 else 𝐛)
                (fun p => if p ∈ b then 𝐭 else 𝐛)

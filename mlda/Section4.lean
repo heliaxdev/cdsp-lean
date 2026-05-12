@@ -460,7 +460,7 @@ theorem t : ⊨[μ] ([deliver, v]ₑ →ₑ ◇ₑ [broadcast, v]ₑ) := by
   have s1 : ⊨[μ] Tₑ (⟐ₑ [ready, v]ₑ) := Lemma_4_2_11.t1 l
   have s2 : ⊨[μ] Tₑ (◇ₑ [ready, v]ₑ) := by
     intro _; simp [denotation]
-    specialize s1 default; simp [denotation] at s1; specialize s1 Finset.univ univ_in_Open1
+    specialize s1 default; simp [denotation] at s1; specialize s1 Finset.univ univ_in_Opn1
     simpa using s1
   specialize s2 default; simp [denotation] at s2; obtain ⟨x1, x2⟩ := s2
   have t : ⊨[μ] ⊡ₑ [echo, v]ₑ := by
