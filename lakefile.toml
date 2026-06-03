@@ -1,7 +1,7 @@
-name = "mlda"
+name = "cdsp-lean"
 version = "0.1.0"
-keywords = ["logic", "distributed systems"]
-defaultTargets = ["mlda"]
+keywords = ["logic", "distributed systems", "cross-domain", "atomicity"]
+defaultTargets = ["mlda", "CDSP"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -15,3 +15,6 @@ rev = "v4.28.0"
 
 [[lean_lib]]
 name = "mlda"
+
+[[lean_lib]]
+name = "CDSP"
