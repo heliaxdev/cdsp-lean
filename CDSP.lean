@@ -1,6 +1,7 @@
 import CDSP.StateMachine
 import CDSP.StatePreservation
 import CDSP.MultiDomain
+import CDSP.Bridge
 
 /-!
 # CDSP
