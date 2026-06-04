@@ -122,5 +122,66 @@ theorem hetero_composition [Fintype Dom]
   simp only [composed, if_pos hd]
   exact Option.some_ne_none v
 
+/-! ## Coupling the source trigger through `syncAll`
+
+`hetero_composition` assumes *every* domain independently triggers. The atomic
+cross-domain story is stronger: **one** source event should propagate to all
+domains. That coupling is exactly Oraclizer's `syncAll` (decide once at the
+source, copy everywhere) — already ported as `MultiDomain.cross_domain_consistency`.
+
+The degenerate `carrier` cannot host `syncAll` (its transition is always
+`none`). `overwriteMD` is the non-degenerate carrier for the sync scenario: the
+asset is already shared across all domains (every domain holds it at `s₀`, so
+`connectedDomains = univ`), and the transition overwrites the asset to the
+action's value. -/
+
+/-- The asset is shared across all domains at initial value `s₀`; the sync action
+carries the new value and the transition overwrites to it. -/
+def overwriteMD (Dom V : Type) [Fintype Dom] [Fintype V] [DecidableEq V] (s₀ : V) :
+    MultiDomain Dom V V Unit where
+  domains := Set.univ
+  sm :=
+    { states := Set.univ
+      actions := Set.univ
+      transition := fun _ a => some a
+      terminal := ∅
+      finite_states := Set.finite_univ
+      finite_actions := Set.finite_univ
+      terminal_subset := fun x _ => Set.mem_univ x
+      terminal_absorbing := by intro s a hs _; simp at hs
+      transition_closed := fun _ _ _ => Set.mem_univ _
+      transition_domain := by intro s a hs; simp at hs }
+  domainState := fun _ _ => some s₀
+  fin_domains := Set.finite_univ
+  consistent_init := by
+    intro d₁ d₂ aid s₁ s₂ _ _ h1 h2
+    have e1 : s₁ = s₀ := by simpa using h1.symm
+    have e2 : s₂ = s₀ := by simpa using h2.symm
+    rw [e1, e2]
+
+/-- Every domain holds the shared asset in `overwriteMD`. -/
+theorem overwriteMD_connected [Fintype Dom] (s₀ : V) (d : Dom) :
+    d ∈ (overwriteMD Dom V s₀).connectedDomains () :=
+  ⟨Set.mem_univ d, Option.some_ne_none s₀⟩
+
+/-- **End-to-end atomic cross-domain sync, from one source event.** The source
+domain's *own* heterogeneous broadcast certifies value `v` (left conjunct, via
+`totality_projected` — `v` is genuinely delivered, not Byzantine); a single
+`syncAll` initiated at that source then atomically propagates `v` to **every**
+domain (right conjunct, via the ported `cross_domain_consistency`). One genuine
+source event ⟹ all domains hold the certified value. -/
+theorem source_broadcast_drives_sync [Fintype Dom]
+    (H : HeteroBroadcast Dom Pnt V) (s₀ v : V) (source : Dom)
+    (trigger : ∃ p, (H.model source).ς deliver p v = 𝐭)
+    {ds' : Dom → Unit → Option V}
+    (hsync : (overwriteMD Dom V s₀).syncAll source v ()
+      (overwriteMD Dom V s₀).domainState = some ds') :
+    locallyDelivered H v source ∧ ∀ d, ds' d () = some v := by
+  refine ⟨local_totality H v source trigger, fun d => ?_⟩
+  have hstate : (overwriteMD Dom V s₀).domainState source () = some s₀ := rfl
+  have htrans : (overwriteMD Dom V s₀).sm.transition s₀ v = some v := rfl
+  exact (overwriteMD Dom V s₀).cross_domain_consistency hstate htrans hsync
+    (overwriteMD_connected s₀ d)
+
 end HeteroComposition
 end CDSP
